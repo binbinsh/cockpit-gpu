@@ -242,8 +242,8 @@ build_dist_from_plugin_source() {
   rsync -a --delete "$plugin_dir/" "$cockpit_root/pkg/cockpit-gpu/"
   patch_cockpit_files_js "$cockpit_root"
 
-  if [[ -x "$cockpit_root/tools/node-modules" ]]; then
-    echo "INFO: installing Cockpit node modules (first run may take a while)" >&2
+  if [[ -x "$cockpit_root/tools/node-modules" && -n "$(command -v podman || true)" ]]; then
+    echo "INFO: installing Cockpit node modules (podman path)" >&2
     if ! (cd "$cockpit_root" && ./tools/node-modules install) >&2; then
       echo "WARN: tools/node-modules install failed, fallback to npm install" >&2
       (cd "$cockpit_root" && npm install) >&2
