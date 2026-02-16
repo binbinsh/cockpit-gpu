@@ -165,12 +165,18 @@ apply_version_to_js() {
   local js_file="$1"
   [[ -f "$js_file" ]] || return 0
   perl -pi -e "s/(APP_VERSION\\s*=\\s*['\\\"])[0-9]{2}\\.[0-9]{4}\\.[0-9]{4}(['\\\"])/\${1}${PLUGIN_VERSION}\${2}/g" "$js_file"
+  if ! grep -q "${PLUGIN_VERSION}" "$js_file"; then
+    perl -pi -e "s/[0-9]{2}\\.[0-9]{4}\\.[0-9]{4}/${PLUGIN_VERSION}/g" "$js_file"
+  fi
 }
 
 apply_version_to_boot() {
   local boot_file="$1"
   [[ -f "$boot_file" ]] || return 0
   perl -pi -e "s/(const\\s+version\\s*=\\s*['\\\"])[0-9]{2}\\.[0-9]{4}\\.[0-9]{4}(['\\\"])/\${1}${PLUGIN_VERSION}\${2}/g" "$boot_file"
+  if ! grep -q "${PLUGIN_VERSION}" "$boot_file"; then
+    perl -pi -e "s/[0-9]{2}\\.[0-9]{4}\\.[0-9]{4}/${PLUGIN_VERSION}/g" "$boot_file"
+  fi
 }
 
 patch_manifest() {
