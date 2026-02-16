@@ -1,0 +1,17 @@
+{
+    "name": "gpus",
+    "conditions": [
+        {"path-exists": "/usr/bin/nvidia-smi"}
+    ],
+    "menu": {
+        "index": {
+            "label": "GPUs",
+            "order": 78,
+            "keywords": [
+                {
+                    "matches": ["nvidia", "gpu", "gpu utilization", "temperature", "power", "memory", "compute"]
+                }
+            ]
+        }
+    }
+}

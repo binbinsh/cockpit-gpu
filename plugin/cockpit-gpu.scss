@@ -1,0 +1,727 @@
+/*
+ * Copyright (C) 2026
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@use "page";
+@use "ct-card";
+@use "global-variables" as *;
+@use "@patternfly/patternfly/utilities/Text/text.scss";
+
+.nvidia-gpu-page {
+  --nvidia-gpu-chart-purple-100: #c4b5fd;
+  --nvidia-gpu-chart-purple-200: #a855f7;
+  --nvidia-gpu-chart-purple-300: #8b5cf6;
+  --pf-t--chart--color--purple--100: var(--nvidia-gpu-chart-purple-100);
+  --pf-t--chart--color--purple--200: var(--nvidia-gpu-chart-purple-200);
+  --pf-t--chart--color--purple--300: var(--nvidia-gpu-chart-purple-300);
+  color: var(--pf-t--global--text--color--regular);
+  background:
+    radial-gradient(circle at 12% -12%, color-mix(in srgb, var(--pf-t--global--palette--blue--50) 20%, transparent 40%)),
+    radial-gradient(circle at 88% -6%, color-mix(in srgb, var(--pf-t--global--palette--cyan--50) 20%, transparent 40%)),
+    var(--pf-t--global--background--color--100);
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--md);
+  box-sizing: border-box;
+}
+
+.nvidia-gpu-overview {
+  margin-top: 0;
+}
+
+.nvidia-gpu-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-page__header h1 {
+  margin: 0;
+  font-size: var(--pf-t--global--font--size--2xl);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.nvidia-gpu-page__version {
+  margin-left: var(--pf-t--global--spacer--xs);
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: 400;
+}
+
+.nvidia-gpu-page__subtitle {
+  margin-top: var(--pf-t--global--spacer--xs);
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.nvidia-gpu-overview__item {
+  padding: var(--pf-t--global--spacer--md);
+  border-radius: var(--pf-t--global--border--radius--sm);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 75%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 70%, transparent);
+}
+
+.nvidia-gpu-overview__item div {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  margin-bottom: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-gpu-overview__item strong {
+  display: inline-block;
+  font-size: var(--pf-t--global--font--size--lg);
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.nvidia-gpu-grid {
+  margin-top: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card-stack {
+  margin-top: var(--pf-t--global--spacer--sm);
+  padding: var(--pf-t--global--spacer--md) 0 var(--pf-t--global--spacer--lg) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--2xl);
+}
+
+.nvidia-gpu-card-stack-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.nvidia-gpu-card {
+  width: 100%;
+  background: color-mix(in srgb, var(--pf-t--global--background--color--100) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 85%, transparent);
+  box-shadow: var(--pf-t--global--box-shadow--sm);
+}
+
+.nvidia-gpu-period-card {
+  width: 100%;
+}
+
+.nvidia-gpu-card__title {
+  gap: var(--pf-t--global--spacer--sm);
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.nvidia-gpu-card__title-main {
+  width: 100%;
+  min-width: 0;
+}
+
+.nvidia-gpu-card__title-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-gpu-card__title-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--xs);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nvidia-gpu-card__title-badge {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.nvidia-gpu-card__sub--right {
+  margin-left: auto;
+  text-align: right;
+  white-space: normal;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.nvidia-gpu-card__title-meta {
+  margin-top: var(--pf-t--global--spacer--xs);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.nvidia-gpu-card__sub {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-card__body {
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__period-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__section-title {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: 600;
+  margin-bottom: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-gpu-card__period-item {
+  border-radius: var(--pf-t--global--border--radius--sm);
+  background: var(--pf-t--global--background--color--100);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  padding: var(--pf-t--global--spacer--xs) var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__period-item div {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-card__period-item strong {
+  font-size: var(--pf-t--global--font--size--lg);
+}
+
+.nvidia-gpu-card__quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__stat-block {
+  border-radius: var(--pf-t--global--border--radius--sm);
+  padding: var(--pf-t--global--spacer--xs) var(--pf-t--global--spacer--sm);
+  background: var(--pf-t--global--background--color--100);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+}
+
+.nvidia-gpu-card__stat-label {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-card__stat-value {
+  font-size: var(--pf-t--global--font--size--md);
+  font-weight: 600;
+  margin: var(--pf-t--global--spacer--xs) 0;
+}
+
+.nvidia-gpu-card__charts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--sm);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+}
+
+.nvidia-gpu-card__chart-cell {
+  border-radius: var(--pf-t--global--border--radius--md);
+  padding: var(--pf-t--global--spacer--sm);
+  background: var(--pf-t--global--background--color--100);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  box-shadow: var(--pf-t--global--box-shadow--xs);
+}
+
+.nvidia-gpu-card__chart-cell .nvidia-gpu-chart {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+}
+
+.nvidia-gpu-card__chart-cell .nvidia-gpu-chart__svg-wrap {
+  margin-top: var(--pf-t--global--spacer--xs);
+  margin-bottom: 0;
+  height: 74px;
+}
+
+.nvidia-gpu-card__chart-cell--sparkline {
+  min-height: 130px;
+}
+
+.nvidia-gpu-card__chart-cell--spark {
+  border-radius: var(--pf-t--global--border--radius--md);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  box-shadow: 0 10px 20px -18px color-mix(in srgb, var(--pf-t--global--text--color--subtle) 32%, transparent);
+  margin: 0;
+  background: var(--pf-t--global--background--color--100);
+}
+
+.nvidia-gpu-card__chart-cell--spark .nvidia-gpu-chart__svg-wrap {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.nvidia-gpu-card__chart-cell--spark .nvidia-gpu-chart {
+  box-shadow: none;
+}
+
+.nvidia-gpu-chart--mini {
+  border: 0;
+  background: transparent;
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__title {
+  margin-bottom: 0.2rem;
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__value {
+  font-size: var(--pf-t--global--font--size--md);
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__svg-wrap {
+  margin-top: 0.35rem;
+  margin-bottom: 0.1rem;
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__gridline {
+  stroke-opacity: 0.6;
+  stroke-dasharray: 2 3;
+  stroke-width: 0.32;
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__line {
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, currentColor 55%, transparent));
+}
+
+.nvidia-gpu-chart--mini .nvidia-gpu-chart__area {
+  opacity: 0.2;
+}
+
+.nvidia-gpu-card__details {
+  margin-top: var(--pf-t--global--spacer--xs);
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__details-title {
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--font--size--md);
+  font-weight: 600;
+}
+
+.nvidia-gpu-card__details-grid {
+  margin-top: var(--pf-t--global--spacer--sm);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-card__bars {
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+  grid-template-columns: 1fr;
+}
+
+.nvidia-gpu-card__bar-label {
+  margin-bottom: var(--pf-t--global--spacer--xs);
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-metric-groups {
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-metric-section {
+  border-radius: var(--pf-t--global--border--radius--sm);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 70%, transparent);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 55%, transparent);
+}
+
+.nvidia-gpu-metric-section--temperature,
+.nvidia-gpu-metric-section--pcie {
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  background: var(--pf-t--global--background--color--100);
+  box-shadow: none;
+}
+
+.nvidia-gpu-metric-section--temperature {
+  border-color: color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  background: var(--pf-t--global--background--color--100);
+  box-shadow: none;
+}
+
+.nvidia-gpu-metric-section--temperature .nvidia-gpu-metric-section__title {
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 65%, transparent);
+  border-left: 0;
+}
+
+.nvidia-gpu-metric-section--pcie {
+  border-color: color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  background: var(--pf-t--global--background--color--100);
+  box-shadow: none;
+}
+
+.nvidia-gpu-metric-section--pcie .nvidia-gpu-metric-section__title {
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 65%, transparent);
+  border-left: 0;
+}
+
+.nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--temperature,
+.nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--pcie {
+  background: var(--pf-t--global--background--color--100);
+}
+
+.nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--temperature .nvidia-gpu-metric-section__title,
+.nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--pcie .nvidia-gpu-metric-section__title {
+  background: var(--pf-t--global--background--color--200);
+}
+
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--temperature,
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--pcie {
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  background: var(--pf-t--global--background--color--100);
+}
+
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--temperature .nvidia-gpu-metric-section__title,
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--pcie .nvidia-gpu-metric-section__title {
+  background: var(--pf-t--global--background--color--200);
+}
+
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--temperature .nvidia-gpu-metric-section__content,
+.nvidia-gpu-card .nvidia-gpu-metric-section--inline-grid.nvidia-gpu-metric-section--pcie .nvidia-gpu-metric-section__content {
+  background: var(--pf-t--global--background--color--100);
+}
+
+.nvidia-gpu-metric-section__title {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  margin: 0;
+  color: var(--pf-t--global--text--color--regular);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 65%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 70%, transparent);
+  border-top-left-radius: var(--pf-t--global--border--radius--sm);
+  border-top-right-radius: var(--pf-t--global--border--radius--sm);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: 600;
+}
+
+.nvidia-gpu-metric-section__content {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  background: var(--pf-t--global--background--color--100);
+}
+
+.nvidia-gpu-metric-section--inline-grid .nvidia-gpu-metric-section__content {
+  padding-top: calc(var(--pf-t--global--spacer--sm) - 0.1rem);
+}
+
+.nvidia-gpu-metric-section--inline-grid .nvidia-gpu-metric-section__content > .pf-v6-c-description-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg);
+  align-items: start;
+}
+
+.nvidia-gpu-metric-section--inline-grid .pf-v6-c-description-list__group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .nvidia-gpu-metric-section--inline-grid .nvidia-gpu-metric-section__content > .pf-v6-c-description-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nvidia-gpu-chart-group {
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-chart-section {
+  border-radius: var(--pf-t--global--border--radius--sm);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 70%, transparent);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 55%, transparent);
+  padding: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-chart-section--thermals,
+.nvidia-gpu-chart-section--pcie {
+  border-width: 2px;
+}
+
+.nvidia-gpu-chart-section--thermals {
+  border-color: color-mix(in srgb, var(--pf-t--chart--color--orange--200) 78%, var(--pf-t--global--border--color--100));
+  background: color-mix(in srgb, var(--pf-t--chart--color--orange--100) 16%, var(--pf-t--global--background--color--200) 84%);
+}
+
+.nvidia-gpu-chart-section--pcie {
+  border-color: color-mix(in srgb, var(--pf-t--chart--color--blue--200) 78%, var(--pf-t--global--border--color--100));
+  background: color-mix(in srgb, var(--pf-t--chart--color--blue--100) 14%, var(--pf-t--global--background--color--200) 86%);
+}
+
+.nvidia-gpu-chart-section--thermals .nvidia-gpu-chart-section__title,
+.nvidia-gpu-chart-section--pcie .nvidia-gpu-chart-section__title {
+  color: var(--pf-t--global--text--color--regular);
+  border-left-color: currentColor;
+  padding-left: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-gpu-chart-section--thermals .nvidia-gpu-chart-section__title {
+  border-left-color: var(--pf-t--chart--color--orange--300);
+}
+
+.nvidia-gpu-chart-section--pcie .nvidia-gpu-chart-section__title {
+  border-left-color: var(--pf-t--chart--color--blue--300);
+}
+
+.nvidia-gpu-chart-section__title {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: 600;
+  padding-left: var(--pf-t--global--spacer--xs);
+  border-left: 3px solid color-mix(in srgb, var(--pf-t--global--palette--blue--300) 80%, transparent);
+}
+
+.nvidia-gpu-chart {
+  border-radius: var(--pf-t--global--border--radius--sm);
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  padding: var(--pf-t--global--spacer--sm);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--100) 80%, transparent);
+}
+
+.nvidia-gpu-chart__gridline {
+  stroke: color-mix(in srgb, var(--pf-t--global--text--color--subtle) 25%, transparent);
+  stroke-width: 0.3;
+  stroke-dasharray: 2.2 2.8;
+}
+
+.nvidia-gpu-chart__area {
+  opacity: 0.24;
+}
+
+.nvidia-gpu-chart__line {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, currentColor 35%, transparent));
+}
+
+/* Force visible vertical spacing for the GPU card stack */
+.nvidia-gpu-card-stack {
+  padding-top: var(--pf-t--global--spacer--lg) !important;
+  padding-bottom: var(--pf-t--global--spacer--lg) !important;
+  row-gap: var(--pf-t--global--spacer--xl) !important;
+  gap: var(--pf-t--global--spacer--xl) !important;
+}
+
+.nvidia-gpu-card-stack-item + .nvidia-gpu-card-stack-item {
+  margin-top: var(--pf-t--global--spacer--md) !important;
+}
+
+.nvidia-gpu-chart__title {
+  margin-bottom: var(--pf-t--global--spacer--xs);
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-chart__value {
+  font-size: var(--pf-t--global--font--size--lg);
+  font-weight: 600;
+}
+
+.nvidia-gpu-chart__svg-wrap {
+  margin-top: var(--pf-t--global--spacer--xs);
+  margin-bottom: var(--pf-t--global--spacer--xs);
+  width: 100%;
+  height: 92px;
+}
+
+.nvidia-gpu-chart__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nvidia-gpu-chart__caption {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-chart__empty {
+  height: 92px;
+  display: grid;
+  place-items: center;
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.nvidia-process-table {
+  overflow-x: auto;
+}
+
+.nvidia-process-table__native {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.nvidia-process-table__native thead th {
+  text-align: left;
+  font-size: var(--pf-t--global--font--size--sm);
+  color: var(--pf-t--global--text--color--subtle);
+  font-weight: 600;
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+  background: var(--pf-t--global--background--color--200);
+  white-space: nowrap;
+}
+
+.nvidia-process-table__native tbody td {
+  padding: var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--md);
+  border-bottom: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 65%, transparent);
+  vertical-align: top;
+}
+
+.nvidia-process-table__native tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.nvidia-process-table__gpu,
+.nvidia-process-table__pid,
+.nvidia-process-table__type,
+.nvidia-process-table__mem {
+  white-space: nowrap;
+}
+
+.nvidia-process-table__cmd {
+  overflow-wrap: anywhere;
+  min-width: 18rem;
+}
+
+.nvidia-process-list {
+  display: grid;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-process-list__row {
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 72%, transparent);
+  background: var(--pf-t--global--background--color--100);
+  border-radius: var(--pf-t--global--border--radius--sm);
+  padding: var(--pf-t--global--spacer--sm);
+  display: grid;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-process-list__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-process-list__chip {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 68%, transparent);
+  background: color-mix(in srgb, var(--pf-t--global--background--color--200) 60%, transparent);
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--font--size--sm);
+  line-height: 1.3;
+}
+
+.nvidia-process-list__name {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  overflow-wrap: anywhere;
+}
+
+.nvidia-usage-table-wrap {
+  margin-top: var(--pf-t--global--spacer--sm);
+  overflow-x: auto;
+}
+
+.nvidia-usage-table {
+  min-width: 100%;
+}
+
+.nvidia-gpu-usage-sub {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+}
+
+.nvidia-gpu-usage-trend {
+  margin-top: var(--pf-t--global--spacer--md);
+  margin-bottom: var(--pf-t--global--spacer--md);
+}
+
+.nvidia-gpu-empty,
+.nvidia-gpu-empty-hint {
+  margin: var(--pf-t--global--spacer--xl);
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.nvidia-gpu-empty {
+  text-align: center;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.nvidia-gpu-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pf-t--global--spacer--xs);
+  color: var(--pf-t--global--text--color--subtle);
+  margin: 0 var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-error {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+}
+
+.nvidia-gpu-overview__processes {
+  margin-top: var(--pf-t--global--spacer--md);
+  padding-top: var(--pf-t--global--spacer--sm);
+  border-top: 1px solid color-mix(in srgb, var(--pf-t--global--border--color--100) 75%, transparent);
+}
+
+.nvidia-gpu-overview__processes-title {
+  margin-bottom: var(--pf-t--global--spacer--sm);
+  color: var(--pf-t--global--text--color--regular);
+  font-size: var(--pf-t--global--font--size--sm);
+  font-weight: 600;
+}
+
+.nvidia-gpu-overview__processes .nvidia-gpu-empty-hint {
+  margin: var(--pf-t--global--spacer--sm) 0 0;
+}
+
+@media (max-width: 960px) {
+  .nvidia-gpu-page {
+    padding: 0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md);
+  }
+
+  .nvidia-gpu-page__header {
+    flex-direction: column;
+  }
+
+  .nvidia-gpu-card__period-summary,
+  .nvidia-gpu-card__quick-grid,
+  .nvidia-gpu-card__charts,
+  .nvidia-gpu-card__details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nvidia-gpu-card__chart-cell .nvidia-gpu-chart__svg-wrap {
+    height: 52px;
+  }
+}
