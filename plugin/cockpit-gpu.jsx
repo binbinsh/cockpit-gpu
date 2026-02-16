@@ -35,7 +35,12 @@ const MAX_HISTORY_POINTS = 300;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const USAGE_MAX_DAYS = 400;
 const USAGE_STORAGE_KEY = 'gpu-monitor-usage-summary-v1';
-const APP_VERSION = '26.0216.1601';
+const APP_VERSION = (() => {
+    const manifestVersion = cockpit?.manifests?.gpus?.version;
+    if (typeof manifestVersion === 'string' && manifestVersion.trim().length > 0)
+        return manifestVersion.trim();
+    return 'dev';
+})();
 
 const GPU_QUERY_FIELDS = [
     { field: 'index', key: 'index' },
