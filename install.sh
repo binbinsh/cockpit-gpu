@@ -17,6 +17,7 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/share/cockpit/$PLUGIN_NAME}"
 FROM_LOCAL=""
 KEEP_WORKDIR=0
 PLUGIN_VERSION_INPUT="${PLUGIN_VERSION:-}"
+BUILT_DIST_DIR=""
 
 usage() {
   cat <<'USAGE'
@@ -259,7 +260,7 @@ build_dist_from_plugin_source() {
 
   candidate="$cockpit_root/dist/cockpit-gpu"
   if is_installable_dist_dir "$candidate"; then
-    echo "$candidate"
+    BUILT_DIST_DIR="$candidate"
     return 0
   fi
 
@@ -317,10 +318,9 @@ find_source_dir() {
     fi
   done
 
-  local built_dir
-  built_dir="$(build_dist_from_plugin_source "$root" || true)"
-  if [[ -n "$built_dir" && -f "$built_dir/manifest.json" ]]; then
-    echo "$built_dir"
+  BUILT_DIST_DIR=""
+  if build_dist_from_plugin_source "$root" && [[ -n "$BUILT_DIST_DIR" ]] && [[ -f "$BUILT_DIST_DIR/manifest.json" ]]; then
+    echo "$BUILT_DIST_DIR"
     return 0
   fi
 
@@ -389,11 +389,38 @@ if [[ "$INSTALL_DIR" == *"/.local/share/cockpit/"* ]]; then
          "$HOME/.local/share/cockpit/cockpit-monitor" 2>/dev/null || true
 fi
 
+restart_existing_units() {
+  local prefix="$1"
+  shift
+  local unit
+  local list_cmd=(systemctl list-unit-files --no-legend --plain)
+
+  if [[ "$prefix" == "sudo" ]]; then
+    list_cmd=(sudo "${list_cmd[@]}")
+  elif [[ "$prefix" == "user" ]]; then
+    list_cmd=(systemctl --user list-unit-files --no-legend --plain)
+  fi
+
+  for unit in "$@"; do
+    if "${list_cmd[@]}" "$unit" 2>/dev/null | awk 'NF>0 {found=1} END{exit !found}'; then
+      if [[ "$prefix" == "sudo" ]]; then
+        sudo systemctl restart "$unit" >/dev/null 2>&1 || true
+      elif [[ "$prefix" == "user" ]]; then
+        systemctl --user restart "$unit" >/dev/null 2>&1 || true
+      else
+        systemctl restart "$unit" >/dev/null 2>&1 || true
+      fi
+    fi
+  done
+
+  return 0
+}
+
 if command -v systemctl >/dev/null 2>&1; then
   if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
-    sudo systemctl restart cockpit.socket || sudo systemctl restart cockpit.service || true
+    restart_existing_units sudo cockpit.socket cockpit.service cockpit-ws.socket cockpit-ws.service || true
   else
-    systemctl --user restart cockpit.socket || systemctl --user restart cockpit.service || true
+    restart_existing_units user cockpit.socket cockpit.service cockpit-ws.socket cockpit-ws.service || true
   fi
 fi
 
