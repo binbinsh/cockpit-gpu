@@ -2650,10 +2650,11 @@ function formatUsageHours(value) {
 
     const hours = value / (60 * 60 * 1000);
     const roundedHours = Math.round(hours * 10) / 10;
-    if (roundedHours <= 0)
-        return `${safeFormatNumber(0, 0)}h`;
 
-    const precision = Number.isInteger(roundedHours) ? 0 : 1;
+    if (!Number.isFinite(roundedHours) || roundedHours < 0)
+        return _('N/A');
+
+    const precision = roundedHours < 1 ? 1 : (Number.isInteger(roundedHours) ? 0 : 1);
     return `${safeFormatNumber(roundedHours, precision)}h`;
 }
 
