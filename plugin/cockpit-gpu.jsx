@@ -3371,9 +3371,6 @@ function App() {
         [usageState, sortedGpus, usageNowTs]);
 
     const update = async (force = false) => {
-        if (document.hidden)
-            return;
-
         const now = Date.now();
         if (!force && now - lastTs.current < POLL_INTERVAL_MS)
             return;
