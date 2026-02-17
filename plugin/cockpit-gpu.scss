@@ -192,7 +192,24 @@
 }
 
 .nvidia-gpu-card__period-item strong {
-  font-size: var(--pf-t--global--font--size--lg);
+  font-size: var(--pf-t--global--font--size--xl);
+  font-weight: 700;
+}
+
+.nvidia-gpu-card__period-meta {
+  color: var(--pf-t--global--text--color--subtle);
+  font-size: var(--pf-t--global--font--size--sm);
+  margin-bottom: var(--pf-t--global--spacer--xs);
+}
+
+.nvidia-gpu-card__period-meta--value {
+  color: var(--pf-t--global--text--color--default);
+}
+
+.nvidia-gpu-card__period-highlight {
+  font-size: var(--pf-t--global--font--size--xl);
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .nvidia-gpu-card__quick-grid {

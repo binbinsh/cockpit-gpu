@@ -1,7 +1,10 @@
 {
     "name": "gpus",
+    "version": "26.0217.2214",
     "conditions": [
-        {"path-exists": "/usr/bin/nvidia-smi"}
+        {
+            "path-exists": "/usr/bin/nvidia-smi"
+        }
     ],
     "menu": {
         "index": {
@@ -9,7 +12,15 @@
             "order": 78,
             "keywords": [
                 {
-                    "matches": ["nvidia", "gpu", "gpu utilization", "temperature", "power", "memory", "compute"]
+                    "matches": [
+                        "nvidia",
+                        "gpu",
+                        "gpu utilization",
+                        "temperature",
+                        "power",
+                        "memory",
+                        "compute"
+                    ]
                 }
             ]
         }
