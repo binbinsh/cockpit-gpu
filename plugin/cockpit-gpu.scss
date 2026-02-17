@@ -212,6 +212,10 @@
   line-height: 1.25;
 }
 
+.nvidia-gpu-card__period-highlight--large {
+  font-size: var(--pf-t--global--font--size--2xl);
+}
+
 .nvidia-gpu-card__quick-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

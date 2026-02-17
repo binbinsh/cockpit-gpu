@@ -59,6 +59,27 @@ done
 echo "Deploying to $TARGET_HOST:$REMOTE_DIR"
 ssh "$TARGET_HOST" "mkdir -p '$REMOTE_DIR'"
 rsync -az --delete "$BUILD_DIR/" "$TARGET_HOST:$REMOTE_DIR/"
+if [[ -f "$PROJECT_DIR/plugin/cockpit-gpu-usage-collector.py" ]]; then
+  rsync -az "$PROJECT_DIR/plugin/cockpit-gpu-usage-collector.py" "$TARGET_HOST:$REMOTE_DIR/"
+fi
+if [[ -f "$PROJECT_DIR/plugin/cockpit-gpu-usage-collector.service" ]]; then
+  rsync -az "$PROJECT_DIR/plugin/cockpit-gpu-usage-collector.service" "$TARGET_HOST:$REMOTE_DIR/"
+fi
+
+if ssh "$TARGET_HOST" "[ -x /usr/bin/python3 ] && [ -f \"$REMOTE_DIR/cockpit-gpu-usage-collector.py\" ]"; then
+  ssh "$TARGET_HOST" '
+if command -v systemctl >/dev/null 2>&1; then
+  if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+    sed "s|{{INSTALL_DIR}}|'"$REMOTE_DIR"'|g" '"$REMOTE_DIR/cockpit-gpu-usage-collector.service"' > /tmp/cockpit-gpu-usage-collector.service
+    sudo install -m 0644 /tmp/cockpit-gpu-usage-collector.service /etc/systemd/system/cockpit-gpu-usage-collector.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now cockpit-gpu-usage-collector.service || true
+  else
+    echo "WARN: skip collector service install on remote: need passwordless sudo."
+  fi
+fi
+' || true
+fi
 
 ssh "$TARGET_HOST" 'rm -rf ~/.local/share/cockpit/gpu-monitor ~/.local/share/cockpit/cockpit-gpu 2>/dev/null || true'
 

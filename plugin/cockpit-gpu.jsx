@@ -34,7 +34,6 @@ const HISTORY_WINDOW_MS = 10 * 60 * 1000;
 const MAX_HISTORY_POINTS = 300;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const USAGE_MAX_DAYS = 30;
-const USAGE_ACTIVE_THRESHOLD = 0;
 const USAGE_BUCKET_MS = 60 * 60 * 1000;
 const USAGE_SUMMARY_VERSION = 3;
 const USAGE_STORAGE_DIR = '/var/lib/cockpit/gpus';
@@ -46,7 +45,7 @@ const APP_VERSION = (() => {
     const manifestVersion = cockpit?.manifests?.gpus?.version;
     if (typeof manifestVersion === 'string' && manifestVersion.trim().length > 0)
         return manifestVersion.trim();
-    return 'dev';
+    return '26.0217.2232';
 })();
 
 const GPU_QUERY_FIELDS = [
@@ -882,18 +881,26 @@ function createUsageSummaryState() {
         version: USAGE_SUMMARY_VERSION,
         updatedAt: Date.now(),
         gpus: {},
+        collectorEnabled: false,
     };
 }
 
 function parseUsageSummaryState(raw) {
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || parsed.version !== USAGE_SUMMARY_VERSION || !parsed.gpus)
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (_error) {
+        return null;
+    }
+
+    if (!parsed || typeof parsed !== 'object' || !parsed.gpus)
         return null;
 
     return {
         version: USAGE_SUMMARY_VERSION,
         updatedAt: Number(parsed.updatedAt) || Date.now(),
-        gpus: parsed.gpus,
+        gpus: typeof parsed.gpus === 'object' && parsed.gpus !== null ? parsed.gpus : {},
+        collectorEnabled: parsed.collectorEnabled === true,
     };
 }
 
@@ -1713,7 +1720,7 @@ function updateUsageSummaryUsage(prev, gpuStats, now) {
             dayEntry.count += 1;
         }
         dayEntry.sampleMs += safeSampleMs;
-        if (utilizationGpu != null && utilizationGpu > USAGE_ACTIVE_THRESHOLD) {
+        if (utilizationGpu != null) {
             dayEntry.activeSum += utilizationGpu * safeSampleMs;
             dayEntry.activeMs += safeSampleMs;
         }
@@ -1848,10 +1855,17 @@ function addUsageTotals(target, source) {
 }
 
 function buildUsageSummaryStats(accumulator) {
+    const avgUsage = accumulator.count > 0 ? accumulator.sum / accumulator.count : null;
+    const normalizedUsage = Number.isFinite(avgUsage) ? Math.max(0, Math.min(100, avgUsage)) : null;
+    const effectiveSampleMs = Number.isFinite(accumulator.sampleMs) && accumulator.sampleMs > 0
+        ? accumulator.sampleMs
+        : (Number.isFinite(accumulator.activeMs) && accumulator.activeMs > 0 ? accumulator.activeMs : null);
+    const hasUsageWindow = Number.isFinite(effectiveSampleMs);
+
     return {
         avg: accumulator.count > 0 ? accumulator.sum / accumulator.count : null,
-        inUsePercent: accumulator.activeMs > 0 ? accumulator.activeSum / accumulator.activeMs : null,
-        inUseMs: accumulator.activeMs > 0 ? accumulator.activeMs : null,
+        inUsePercent: hasUsageWindow ? normalizedUsage : null,
+        inUseMs: hasUsageWindow && Number.isFinite(normalizedUsage) ? (normalizedUsage / 100) * effectiveSampleMs : null,
         memoryAvg: accumulator.utilizationMemoryCount > 0 ? accumulator.utilizationMemorySum / accumulator.utilizationMemoryCount : null,
         temperatureAvg: accumulator.temperatureCount > 0 ? accumulator.temperatureSum / accumulator.temperatureCount : null,
     };
@@ -1872,6 +1886,7 @@ function newUsagePeriod() {
 }
 
 function computeUsageSummary(profiles, nowTs, gpuIds) {
+    const safeProfiles = profiles && typeof profiles === 'object' ? profiles : {};
     const ids = gpuIds.filter(Boolean);
     const now = nowTs;
     const startDay = now - USAGE_WINDOW_DAY;
@@ -1915,7 +1930,7 @@ function computeUsageSummary(profiles, nowTs, gpuIds) {
         let sum = 0;
         let count = 0;
         for (const gpuId of ids) {
-            const profile = profiles[gpuId];
+            const profile = safeProfiles[gpuId];
             if (!profile || !profile.days)
                 continue;
 
@@ -1936,7 +1951,7 @@ function computeUsageSummary(profiles, nowTs, gpuIds) {
         let count = 0;
 
         for (const gpuId of ids) {
-            const profile = profiles[gpuId];
+            const profile = safeProfiles[gpuId];
             if (!profile || !profile.days)
                 continue;
 
@@ -1953,7 +1968,7 @@ function computeUsageSummary(profiles, nowTs, gpuIds) {
     });
 
     for (const id of ids) {
-        const profile = profiles[id];
+        const profile = safeProfiles[id];
         if (!profile)
             continue;
 
@@ -3072,10 +3087,10 @@ function GpuCard({ gpu, history, usageSummary = {} }) {
                 </div>
                 <div className="nvidia-gpu-card__period-summary" aria-label={_('GPU utilization by period')}>
                     <div className="nvidia-gpu-card__period-item">
-                        <div>{_('Last 24 hours')}</div>
-                        <div className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
-                            {_('Used')} {formatUsageHours(usageSummary.dayInUseMs)}
-                        </div>
+                        <div>{_('Last 24 hours')} {_('used')}</div>
+                        <strong className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
+                            {formatUsageHours(usageSummary.dayInUseMs)}
+                        </strong>
                         <div className="nvidia-gpu-card__period-meta">
                             {_('Avg while in use')}
                         </div>
@@ -3084,10 +3099,10 @@ function GpuCard({ gpu, history, usageSummary = {} }) {
                         </strong>
                     </div>
                     <div className="nvidia-gpu-card__period-item">
-                        <div>{_('Last 7 days')}</div>
-                        <div className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
-                            {_('Used')} {formatUsageHours(usageSummary.weekInUseMs)}
-                        </div>
+                        <div>{_('Last 7 days')} {_('used')}</div>
+                        <strong className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
+                            {formatUsageHours(usageSummary.weekInUseMs)}
+                        </strong>
                         <div className="nvidia-gpu-card__period-meta">
                             {_('Avg while in use')}
                         </div>
@@ -3096,10 +3111,10 @@ function GpuCard({ gpu, history, usageSummary = {} }) {
                         </strong>
                     </div>
                     <div className="nvidia-gpu-card__period-item">
-                        <div>{_('Last 30 days')}</div>
-                        <div className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
-                            {_('Used')} {formatUsageHours(usageSummary.monthInUseMs)}
-                        </div>
+                        <div>{_('Last 30 days')} {_('used')}</div>
+                        <strong className="nvidia-gpu-card__period-meta nvidia-gpu-card__period-meta--value nvidia-gpu-card__period-highlight">
+                            {formatUsageHours(usageSummary.monthInUseMs)}
+                        </strong>
                         <div className="nvidia-gpu-card__period-meta">
                             {_('Avg while in use')}
                         </div>
@@ -3324,6 +3339,7 @@ function App() {
     const [stableProcessRows, setStableProcessRows] = useState([]);
     const [usageState, setUsageState] = useState(() => createUsageSummaryState());
     const [usageStateLoaded, setUsageStateLoaded] = useState(false);
+    const [usageCollectorEnabled, setUsageCollectorEnabled] = useState(false);
     const [usageNowTs, setUsageNowTs] = useState(Date.now());
     const [error, setError] = useState(null);
     const [processError, setProcessError] = useState(null);
@@ -3403,7 +3419,12 @@ function App() {
 
             setGpus(gpuStats);
             setProcesses(procStats);
-            setUsageState(prev => updateUsageSummaryUsage(prev, gpuStats, now));
+            if (usageCollectorEnabled) {
+                const restored = await readUsageSummaryFromStorage();
+                setUsageState(prev => restored || prev);
+            } else {
+                setUsageState(prev => updateUsageSummaryUsage(prev, gpuStats, now));
+            }
             setUsageNowTs(now);
             setError(null);
 
@@ -3447,6 +3468,7 @@ function App() {
             if (!mounted)
                 return;
             setUsageState(restored);
+            setUsageCollectorEnabled(Boolean(restored?.collectorEnabled));
             setUsageStateLoaded(true);
         })();
 
@@ -3458,8 +3480,11 @@ function App() {
     useEffect(() => {
         if (!usageStateLoaded)
             return;
+        if (usageCollectorEnabled)
+            return;
+
         void saveUsageSummaryToStorage(usageState);
-    }, [usageState, usageStateLoaded]);
+    }, [usageState, usageStateLoaded, usageCollectorEnabled]);
 
     useEffect(() => {
         let running = true;

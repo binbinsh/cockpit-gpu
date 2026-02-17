@@ -1,6 +1,6 @@
 {
     "name": "gpus",
-    "version": "26.0217.2214",
+    "version": "26.0217.2232",
     "conditions": [
         {
             "path-exists": "/usr/bin/nvidia-smi"

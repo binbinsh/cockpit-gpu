@@ -363,9 +363,18 @@ cp -a "$SOURCE_DIR/." "$STAGE_DIR/"
 copy_if_missing "$STAGE_DIR/index.html" "$REPO_DIR/plugin/index.html"
 copy_if_missing "$STAGE_DIR/cockpit-gpu-boot.js" "$REPO_DIR/plugin/cockpit-gpu-boot.js"
 copy_if_missing "$STAGE_DIR/po.js" "$REPO_DIR/plugin/po.js"
+if [[ -f "$REPO_DIR/plugin/cockpit-gpu-usage-collector.py" ]]; then
+    cp "$REPO_DIR/plugin/cockpit-gpu-usage-collector.py" "$STAGE_DIR/"
+fi
+if [[ -f "$REPO_DIR/plugin/cockpit-gpu-usage-collector.service" ]]; then
+    cp "$REPO_DIR/plugin/cockpit-gpu-usage-collector.service" "$STAGE_DIR/"
+fi
 ensure_plain_file_from_gz "$STAGE_DIR/cockpit-gpu.js.gz" "$STAGE_DIR/cockpit-gpu.js" || true
 ensure_plain_file_from_gz "$STAGE_DIR/cockpit-gpu.css.gz" "$STAGE_DIR/cockpit-gpu.css" || true
 ensure_plain_file_from_gz "$STAGE_DIR/cockpit-gpu-boot.js.gz" "$STAGE_DIR/cockpit-gpu-boot.js" || true
+if [[ -f "$STAGE_DIR/cockpit-gpu-usage-collector.py" ]]; then
+    chmod +x "$STAGE_DIR/cockpit-gpu-usage-collector.py"
+fi
 
 for required in manifest.json index.html cockpit-gpu.js cockpit-gpu.css cockpit-gpu-boot.js; do
   if [[ ! -f "$STAGE_DIR/$required" ]]; then
@@ -422,6 +431,31 @@ restart_existing_units() {
   return 0
 }
 
+install_usage_collector_service() {
+  local template="$STAGE_DIR/cockpit-gpu-usage-collector.service"
+  [[ -f "$template" ]] || return 0
+  [[ -x "$INSTALL_DIR/cockpit-gpu-usage-collector.py" ]] || return 0
+
+  if ! command -v systemctl >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local rendered="$WORKDIR/cockpit-gpu-usage-collector.service"
+  sed "s|{{INSTALL_DIR}}|${INSTALL_DIR}|g" "$template" > "$rendered"
+
+  if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+    local system_unit="/etc/systemd/system/cockpit-gpu-usage-collector.service"
+    sudo install -m 0644 "$rendered" "$system_unit"
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now cockpit-gpu-usage-collector.service || true
+    return 0
+  fi
+
+  echo "WARN: skip persistent collector service install; system-level installation requires root privileges (sudo) or running installer as root."
+  return 0
+
+}
+
 if command -v systemctl >/dev/null 2>&1; then
   if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
     restart_existing_units sudo cockpit.socket cockpit.service cockpit-ws.socket cockpit-ws.service || true
@@ -429,6 +463,7 @@ if command -v systemctl >/dev/null 2>&1; then
     restart_existing_units user cockpit.socket cockpit.service cockpit-ws.socket cockpit-ws.service || true
   fi
 fi
+install_usage_collector_service || true
 
 echo
 echo "Installed cockpit GPU plugin:"

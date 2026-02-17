@@ -1,0 +1,13 @@
+[Unit]
+Description=Cockpit GPU usage collector
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={{INSTALL_DIR}}/cockpit-gpu-usage-collector.py
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
